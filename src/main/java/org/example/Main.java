@@ -29,7 +29,7 @@ public class Main {
         token = input.nextLine();
         System.out.println("Enter your PactFlow tenant (without URL) format: tenant.pactflow.io");
         tenant = input.nextLine();
-        System.out.println("Enter page number to return");
+        System.out.println("Enter page number to return (minimum value = 1)");
         pageNumber = input.nextInt();
         System.out.println("Enter page size/number of results per page");
         size = input.nextInt();
@@ -39,6 +39,7 @@ public class Main {
 
         if (users == null){
             System.out.println("Users object is null/invalid response");
+            return;
         }else{
             System.out.println("Enter file name");
             filename = input.nextLine();
@@ -55,7 +56,7 @@ public class Main {
         HttpRequest httpRequest = HttpRequest.newBuilder()
                 .uri(URI.create(URL))
                 .headers(
-                        "Accept", "application/json+hal",
+                        "Accept", "application/json",
                         "Authorization", "Bearer " + token
                 )
                 .GET()
@@ -83,7 +84,7 @@ public class Main {
             ArrayList<String> roles = new ArrayList<String>();
             ArrayList<String> teams = new ArrayList<String>();
             for (int i = 0; i < apiResponse.page.totalElements; i++){
-                String line = String.format("%s,%s,%s",
+                String line = String.format("%s,%s,%s,",
                         apiResponse.users[i].name,
                         apiResponse.users[i].email,
                         apiResponse.users[i].active
@@ -95,9 +96,13 @@ public class Main {
                 for (int k = 0; k < apiResponse.users[i]._embedded.teams.length; k++){
                     teams.add(apiResponse.users[i]._embedded.teams[k].name);
                 }
-                line += String.format("%s,%s,%s,%s",
-                        roles,
-                        teams,
+                line += String.join(";", roles);
+                line += ",";
+                line += String.join(";", teams);
+                line += ",";
+                line += String.format("%s,%s\n",
+                        //roles,
+                        //teams,
                         apiResponse.users[i].createdAt,
                         apiResponse.users[i].updatedAt
                 );
